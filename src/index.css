@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.slick-slider button{
+    background:black;
+    font-size:40px;
+    /* padding:20px; */
+
+}
+/* .slick-slider button:hover{
+    color:initial;
+} */
+/* @layer base{
+    body{
+        background:black;
+    }
+} */
+/* .slick-slider{
+    background:black;
+} */
+.slick-slide > div{
+    margin:0 10px;
+}
+/* webkit-scrollbar is the scrollbar. */
+/* .itemList::-webkit-scrollbar{
+    display:none;
+} */
