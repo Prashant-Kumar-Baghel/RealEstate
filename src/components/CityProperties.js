@@ -1,74 +1,72 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import React, {  useContext, useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import useCityProperties from '../utils/useCityProperties'
 import PropertyCard from './PropertyCard'
-import Footer from './Footer'
-// import Spinner from './Spinner'
 import Multiselect from 'multiselect-react-dropdown'
-import {priceContext, PriceProvider} from '../utils/priceContext'
-import Body from './Body'
 import { toast } from 'react-toastify'
 import { addDoc, collection } from 'firebase/firestore'
 import { db } from '../utils/firebase'
-// import { Modal } from 'semantic-ui-react'
 import 'react-toastify/dist/ReactToastify.css';
-import Header from './Header'
-// import FormatPrice from '../Helpers/FormatPrice'
+import { useSelector } from 'react-redux'
+import myContext from '../context/myContext'
+import Breadcrumb from './Breadcrumb'
+import PropertyFaq from './PropertyFaq'
 const CityProperties = () => {
-  const [isShowBody,setIsShowBody]=useState(false);
+  const propertyType=useSelector((store)=>store.features.ispropertyRent);
     const {cityId}=useParams()
-    // console.log(typeof(cityId));
     const [filteredproptyData,setFilteredProptyData]=useState([]);
+    const {cityList}=useContext(myContext);
+    console.log("cityList",cityList);
+    console.log("filteredproptyData",filteredproptyData);
     const proptyData=useCityProperties(cityId,setFilteredProptyData);//we get all fetch data inside object hence we use object.values.
+    console.log("proptyData",proptyData);
     const proptyDataArray=Object.values(proptyData);//the Object.values() method is used to extract the values from an object and return them as an array. 
     const filteredproptyDataArray=Object.values(filteredproptyData)
-    const [dropRangeDown,setDropRangeDown]=useState(false)
-    // console.log("filtered",filteredproptyData);
-    const [priceOrder,setPriceOrder]=useState(null);
+    const [priceOrder,setPriceOrder]=useState(null);//create this state variable  to store way sort the property.
     const length=filteredproptyDataArray?.length;
-    console.log("proptyDataji",proptyDataArray)
-    console.log("filteredproptyDataji",filteredproptyDataArray)
-    // const handleFilterChange=(e)=>{
-    //   e.stopPropagation()
-    //   if(e.target.value==="ascending"){
-    //     console.log(e.target.value)
-    //     const updatedArray=[...filteredproptyData].sort((a,b)=>a.price-b.price)//Always Subtract second argument from first argument to get array in ascending order.
-    //   // console.log("filtered",filteredproptyData);
-    //   // console.log("updated",updatedArray);
-    //     setFilteredProptyData(updatedArray);
-    //   }else if(e.target.value==="descending"){
-    //     console.log(e.target.value)
-    //     // In the code provided, the spread operator (...) is used to create a copy of the filteredproptyData array before sorting it because When dealing with arrays or objects in React state, it's crucial to avoid directly updating the original state(because sort() overwrites the original array) we use setsetFilteredProptyData to update the state.
-    //     const updatedArray= [...filteredproptyData].sort((a,b)=>b.price-a.price)//Always Subtract first argument from second argument to get array in descending order.
-    //     setFilteredProptyData(updatedArray);
-    //   }else{
-    //     setFilteredProptyData(proptyData);
-    //   }
-    // }
-
-    //useContext
-    const {priceValue, setPriceValue}=  useContext(priceContext)
-
+    const bhkData=useSelector((store)=>store.features.bhkData)
+    const furnishingData=useSelector((store)=>store.features.furnishingData)
+    const navigate=useNavigate();
+    console.log("proptyDataArray",proptyDataArray)
     //furnishing
-    const [options]=useState([
-      {id:0,Furnishing:'Fully Furnished'},
-      {id:1,Furnishing:'Semi Furnished'},
-      {id:2,Furnishing:'Un Furnished'}
-    ])
+    // const [options]=useState([
+    //   {id:0,Furnishing:'Fully Furnished'},
+    //   {id:1,Furnishing:'Semi Furnished'},
+    //   {id:2,Furnishing:'Un Furnished'}
+    // ])
 
     //BHK
-    const [bhkoptions]=useState([
-      {id:0,BHK: 1},
-      {id:1,BHK: 2},
-      {id:2,BHK: 3}
-    ])
+    // const [bhkoptions]=useState([
+    //   {id:0,BHK: "1"},
+    //   {id:1,BHK: "2"},
+    //   {id:2,BHK: "3"}
+    // ])
 
-    // if(length!==0){
+    // useEffect(()=>{
+    //   if(bhkDataArray?.length!==0){
+    //     console.log("Inside",bhkDataArray)
+    //     setSelectedBhkOptions(bhkDataArray);
+    //   }
+    // },[proptyDataArray])
+    // ---------------------------------------------------------------------- -------------
+
+    useEffect(() => {
+      if (proptyDataArray?.length !== 0) {
+          setSelectedBhkOptions(bhkData);
+      }
+  }, [proptyData]);
+
+  useEffect(() => {
+    if (proptyDataArray?.length !== 0) {
+        setSelectedOptions(furnishingData)
+    }
+}, [proptyData]);
+// ------------------------------------------------------------------  -------------------------
+
      const priceArray=proptyDataArray?.map((item)=>item.price)
     //we have to give some intial value to reduce method hence we provide 0 .Math.max used to find find maximum number between two digits .
     const maxValue = priceArray?.length > 0 ? priceArray.reduce((initialValue, currValue) => Math.max(initialValue, currValue), 0) : null;
-    // console.log("MaxValue",maxValue)
-    // }
+    
 
     const [currentPrice,setCurrentPrice]=useState(maxValue);//for the price range
     //we write below useEffect because on initially rendering maxValue is zero when priceArray is empty and then our currentValue also become zero but we want currentValue as maxValue hence we write useEffect.
@@ -79,159 +77,72 @@ const CityProperties = () => {
   }, [maxValue]);
 
   // --------------------------
-  const [selectedOptions, setSelectedOptions] = useState([]);//furnishing
-  const [selectedBhkOptions, setSelectedBhkOptions] = useState([]);//bhk
-  const handleFurnishingChange = selectedList => {
-    setSelectedOptions(selectedList);
+  const [selectedOptions, setSelectedOptions] = useState(furnishingData);//fit contain selected furnishing options.
+  const [selectedBhkOptions, setSelectedBhkOptions] = useState(bhkData);//it contain selected bhk options.
+  const handleFurnishingChange =(e)=> {
+    console.log("handleFurnishingChange",e.target.value)
+    setSelectedOptions(e.target.value);
 };
 
-const handleBhkChange = selectedList => {
-    setSelectedBhkOptions(selectedList);
+const handleBhkChange = (e) => {
+  console.log("handleBhkChange",e.target.value)
+    setSelectedBhkOptions(e.target.value);
 };
 
 const handlePriceChange = e => {
-  console.log("price",e.target.value);
     setCurrentPrice(parseInt(e.target.value));
 };
 const handlePriceOrderChange=(e)=>{
   setPriceOrder(e.target.value);
 }
 
+// useEffect(() => {
+//   filterProperties();
+// }, [selectedOptions, selectedBhkOptions, currentPrice,priceOrder]);
 useEffect(() => {
-  console.log("priceValueFinal",priceValue);
   filterProperties();
-}, [selectedOptions, selectedBhkOptions, currentPrice,priceOrder]);
-
+}, [selectedOptions, selectedBhkOptions, currentPrice, priceOrder, proptyData]);
 
 const filterProperties = () => {
   let filteredData = [...proptyDataArray];
-  console.log("curr",currentPrice);
-  // console.log("priceOrder",priceOrder);
-
+console.log("filteredDataInitial",filteredData)
   // Filter by selected furnishings
-  if (selectedOptions.length > 0) {
-    const selectedFurnishings = selectedOptions.map(option => option.Furnishing);
-      filteredData = filteredData.filter(item =>
-          selectedFurnishings.includes(item.furnishing)
-      );
+ console.log("selectedOptions",selectedOptions)
+ console.log("selectedBhkOptions",selectedBhkOptions)
+ console.log("currentPrice",currentPrice)
+ console.log("priceOrder",priceOrder)
+  if(selectedOptions!==null && selectedOptions!=="select"){
+    console.log("insideFurnishing");
+    filteredData = filteredData.filter(item =>item.furnishing===selectedOptions);
   }
+  
 
   // Filter by selected BHK options
-  if (selectedBhkOptions.length > 0) {
-    const selectedBhks = selectedBhkOptions.map(option => option.BHK);
-      filteredData = filteredData.filter(item => {
-        return selectedBhks.includes(item.bhk);
-    });
-  }
+  
+    if(selectedBhkOptions!==null && selectedBhkOptions!=="select"){
+      console.log("insideBHK");
+      filteredData = filteredData.filter(item => item.bhk===selectedBhkOptions);
+    }
 
   // Filter by price range
   filteredData = filteredData.filter(item => item.price <= currentPrice);
-  console.log("filteredData",filteredData);
-  // if(priceValue!==null){
-  //   filteredData = filteredData.filter(item => item.price <= priceValue);
-  // }
+  
 
   //filter by price order(HighToLOw etc);
   
       if(priceOrder==="ascending"){
-        // console.log(e.target.value)
         filteredData = filteredData.sort((a,b)=>a.price-b.price)//Always Subtract second argument from first argument to get array in ascending order.
-      // console.log("filtered",filteredproptyData);
-      // console.log("updated",updatedArray);
-        // setFilteredProptyData(updatedArray);
       }else if(priceOrder==="descending"){
-        // console.log(e.target.value)
         // In the code provided, the spread operator (...) is used to create a copy of the filteredproptyData array before sorting it because When dealing with arrays or objects in React state, it's crucial to avoid directly updating the original state(because sort() overwrites the original array) we use setsetFilteredProptyData to update the state.
+        //The comparison function should return a negative value if a should come before b, a positive value if a should come after b, or zero if a and b are considered equal in terms of sorting order.
         filteredData = filteredData.sort((a,b)=>b.price-a.price)//Always Subtract first argument from second argument to get array in descending order.
-        // setFilteredProptyData(updatedArray);
       }
-      console.log("filteredData1",filteredData);
+      console.log("filteredDataFinal",filteredData)
   setFilteredProptyData(filteredData);
 };
 
 
-  // -------------------
-    // console.log(currentPrice);
-    // const handlePriceChange=(e)=>{
-    //   // const priceValue = parseInt(e.target.value); // Parse the value to ensure it's an integer
-    //   // setCurrentPrice(priceValue);
-    //   // if(priceArray?.length===0){
-    //   //   const filteredPriceArray=proptyData.filter((item)=>item.price===priceValue);
-    //   // setFilteredProptyData(filteredPriceArray);
-    //   // }else{
-    //   //   const filteredPriceArray=proptyData.filter((item)=>item.price<=priceValue);
-    //   // setFilteredProptyData(filteredPriceArray);
-    //   // }
-    //   const priceValue = parseInt(e.target.value); // Parse the value to ensure it's an integer
-    // setCurrentPrice(priceValue); // Update the currentPrice state
-
-    // // Filter the property data based on the selected price value
-    // const filteredData = proptyData.filter(item => item.price <= priceValue);
-
-    // // Update the filtered property data state
-    // setFilteredProptyData(filteredData)
-    // }
-    
-
-    // furnishing 
-    // const [selectedOptions, setSelectedOptions] = useState([]);
-
-    // const handleFurnishingChange = (selectedList) => {
-    //   // console.log("selectedList",selectedList);
-    //     setSelectedOptions(selectedList);
-    //     filterProperties(selectedList);
-    // };
-
-  //   const filterProperties = (selectedList) => {
-  //     // console.log("proptyData",proptyData);
-  //     // console.log("selectedList",selectedList);
-  //     if (selectedList.length === 0) {
-  //       setFilteredProptyData(proptyData);
-  //       return;
-  //   }
-  //   const selectedFurnishings = selectedList.map(option => option.Furnishing);
-  //   // console.log("selectedFurnishings",selectedFurnishings)
-  //   // Filter properties based on selected options
-  //   console.log("proptyData",proptyData);
-  //   const filteredFinishData = proptyData.filter(item => {
-  //     return selectedFurnishings.includes(item.furnishing);
-  // });
-  //     console.log("filtereddata",filteredFinishData);
-  //   setFilteredProptyData(filteredFinishData);
-  //   };
-
-    //BHK
-
-    // const [selectedBhkOptions, setSelectedBhkOptions] = useState([]);
-
-    // const handleBhkChange = (selectedList) => {
-    //   // console.log("selectedList",selectedList);
-    //   setSelectedBhkOptions(selectedList);
-    //     filterBhkProperties(selectedList);
-    // };
-
-  //   const filterBhkProperties = (selectedList) => {
-  //     // console.log("proptyData",proptyData);
-  //     // console.log("selectedList",selectedList);
-  //     if (selectedList.length === 0) {
-  //       setFilteredProptyData(proptyData);
-  //       return;
-  //   }
-  //   const selectedBhks = selectedList.map(option => option.BHK);
-  //   // console.log("selectedFurnishings",selectedFurnishings)
-  //   // Filter properties based on selected options
-  //   console.log("proptyData",proptyData);
-  //   const filteredBhkData = proptyData.filter(item => {
-  //     return selectedBhks.includes(item.bhk);
-  // });
-  //     console.log("filtereddata",filteredBhkData);
-  //   setFilteredProptyData(filteredBhkData);
-  //   };
-
-    // when we fetching data then in that time we load  Spinner.
-    // if(priceValue!==null){
-    //   setCurrentPrice(priceValue);
-    // }
+  
 
     // Payment Integration (//we store addressInfo in firebase).
     //we create all below state variables to get information from user.
@@ -281,7 +192,6 @@ const filterProperties = () => {
         name: "E-Bharat",
         description: "for testing purpose",
         handler: function (response) {
-            console.log(response)
             toast.success('Payment Successful')
             const paymentId = response.razorpay_payment_id
             // store in firebase 
@@ -314,111 +224,115 @@ const filterProperties = () => {
 
       var pay = new window.Razorpay(options);
       pay.open();
-      console.log(pay)
 }
-// const formDate= new Date().toLocaleString();
-// const formDat= new Date();
-//       console.log(typeof(formDate))
-//       console.log(typeof(formDat))
+
+// --------------------- Finding the city .--------------
+const cityDetails=cityList.find((item)=>item.id===cityId)
+console.log("cityDetails",cityDetails)
+
+
   return (
   <>
-        <div className="className='max-w-[1180px] mx-auto px-[20px] overflow-hidden my-[20vh] flex-wrap">
-          <div className='flex gap-5 mb-5 sm:flex-row flex-col'>
-            {/* filtered by furnishing .  */}
-            <div className='sx:w-[40%] w-[100%]  ' >
-              {/* <Multiselect options={options} displayValue='Furnishing'/> */}
-              <Multiselect
-                          options={options}
-                          selectedValues={selectedOptions}
-                          displayValue='Furnishing'
-                          onSelect={handleFurnishingChange}
-                          onRemove={handleFurnishingChange}
-                          // showCheckbox={true}
-                          placeholder='Select furnishing...'
-                      />
-            </div>
-            {/* filtered by BHK .  */}
-            <div className='sx:w-[20%] w-[100%] '>
-              {/* <Multiselect options={options} displayValue='Furnishing'/> */}
-              <Multiselect
-                          options={bhkoptions}
-                          selectedValues={selectedBhkOptions}
-                          displayValue='BHK'
-                          onSelect={handleBhkChange}
-                          onRemove={handleBhkChange}
-                          // showCheckbox={true}
-                          placeholder='Select BHK...'
-                      />
-            </div>
-            {/* <div>
-              <button className='border-[2px] border-black border-solid px-[20px] py-[8px]' onClick={(e)=>{
-                e.preventDefault();
-                setDropRangeDown(!dropRangeDown)
-              }}>Budget</button>
-              
-              {dropRangeDown && <div className='mt-2'>
-                  <p className='mb-0 text-[1.2rem]'>₹{currentPrice}</p>
-                  <form action="">
-                    <label htmlFor="range"></label>
-                    <input type="range" id='range' value={currentPrice} min={0} max={maxValue} onChange={handlePriceChange} step="100" className='w-[15vw]' />
-                  </form>
-              </div>}
-            </div> */}
-          </div>
-
-         
-           
-           {/* Filturing by range */}
-           
-           {/* <div className='mt-4'>
-            <h3>Budget</h3>
-            <p className='mb-0'>₹{currentPrice}</p>
-            <form action="">
-              <label htmlFor="range"></label>
-              <input type="range" id='range' value={currentPrice} min={0} max={maxValue} onChange={handlePriceChange} step="100" />
-            </form>
-           </div> */}
-
-            <div>
-              <button className='border-[2px] border-black border-solid px-[20px] py-[8px]' onClick={(e)=>{
-                e.preventDefault();
-                setDropRangeDown(!dropRangeDown)
-              }}>Budget</button>
-              
-              {dropRangeDown && <div className='mt-2'>
-                  <p className='mb-0 text-[1.2rem]'>₹{currentPrice}</p>
-                  <form action="">
-                    <label htmlFor="range"></label>
-                    <input type="range" id='range' value={currentPrice} min={0} max={maxValue} onChange={handlePriceChange} step="100" className='w-[15vw]' />
-                  </form>
-              </div>}
-            </div>
-
-            <div className='flex sx:gap-[14rem] sx:items-center sm:flex-row flex-col '>
-              <h2 className='text-[2.5rem]'>{length} results | Flats for Rent in {filteredproptyDataArray[0]?.city}</h2>
-              {/* Filtered By price . */}
-              <div>
-                <form action="" className='flex gap-[.5rem] items-center'>
-            
-                    <label htmlFor="Sort" className='text-[1.2rem]'>Sort by:</label>
-                    <select name="sort" id="sort" className='border-black border-[2px] border-solid px-[10px] py-[5px] rounded-full' onChange={handlePriceOrderChange}>
-                      <option value="Relevance" className='px-[5px] py-[2px]'>Relevance</option>
-                      <option value="#" disabled></option>
-                      <option value="ascending" className='px-[5px] py-[2px]'>Price - Low to High</option>
-                      <option value="#" disabled></option>
-                      <option value="descending" className='px-[5px] py-[2px]'>Price - High to Low</option>
-                    </select>
-                </form>
+       <Breadcrumb 
+                pageTitle="Property Sidebar"
+                pageName="Property Sidebar"
+            />
+       <section className=' bg-gray-100 py-[8vh] '>
+          <div className='container container-two'>
+              <div className='flex gap-5 mb-5 sm:flex-row flex-col'>
+                {/* filtered by furnishing .  */}
+                <div className='sm:w-[20%] w-[100%]' >
+                  {/* <Multiselect
+                              options={options}
+                              selectedValues={selectedOptions}
+                              displayValue='Furnishing'          
+                              onSelect={handleFurnishingChange}
+                              onRemove={handleFurnishingChange}
+                              placeholder='Select furnishing...'
+                          /> */}
+                  <select name="" id="" onChange={handleFurnishingChange} className='border-black border-[2px] border-solid px-[10px] py-[5px] rounded-full w-[100%] h-[100%]' value={selectedOptions}>
+                     <option value="select">Furnishing</option>
+                     <option value="Fully Furnished">Fully Furnished</option>
+                     <option value="Semi Furnished">Semi Furnished</option>
+                     <option value="Un Furnished">Un Furnished</option>
+                  </select>
+                </div>
+                {/* filtered by BHK .  */}
+                <div className='sm:w-[20%] w-[100%]  '>
+                  {/* <Multiselect
+                              options={bhkoptions}
+                              selectedValues={selectedBhkOptions}
+                              displayValue='BHK'
+                              onSelect={handleBhkChange}//to get selected values inside dropdown.
+                              onRemove={handleBhkChange}
+                              placeholder='Select BHK...'
+                          /> */}
+                          <select name="" id="" onChange={handleBhkChange} className='border-black border-[2px] border-solid px-[10px] py-[5px] rounded-full w-[100%] h-[100%]' value={selectedBhkOptions}>
+                              <option value="select">BHK</option>
+                              <option value="1">1</option>
+                              <option value="2">2</option>
+                              <option value="3">3</option>
+                          </select>
+                </div>
+      
+                <div className='w-[100%] lg:w-[18%] '>
+                  <div className='mt-2'>
+                      <p className='mb-0 text-[1.2rem]'>₹{currentPrice}</p>
+                      <form action="">
+                        <label htmlFor="range"></label>
+                        <input type="range" id='range' value={currentPrice} min={0} max={maxValue} onChange={handlePriceChange} className='w-[100%] ' />
+                      </form>
+                  </div>
+                </div>
               </div>
+
+
+
+                <div className='flex sm:gap-[3rem] sm:items-center sm:flex-row flex-col flex-wrap my-3'>
+                  <h2 className='text-[1.8rem] lg:text-[2.5rem]'>{length} results | Flats for {propertyType?"Rent":"Buy"} in {filteredproptyDataArray[0]?.city}</h2>
+                  {/* Filtered By price . */}
+                  <div>
+                    <form action="" className='flex gap-[.5rem] items-center'>
+                
+                        <label htmlFor="Sort" className='text-[1.2rem]'>Sort by:</label>
+                        <select name="sort" id="sort" className='border-black border-[2px] border-solid px-[10px] py-[5px] rounded-full' onChange={handlePriceOrderChange}>
+                          <option value="Relevance" className='px-[5px] py-[2px]'>Relevance</option>
+                          <option value="ascending" className='px-[5px] py-[2px]'>Price - Low to High</option>
+                          <option value="descending" className='px-[5px] py-[2px]'>Price - High to Low</option>
+                        </select>
+                    </form>
+                  </div>
+                </div>
+
+                <div className=' w-[100%] mb-4 lg:w-[67%]'>
+                  <p className='text-[1.1rem] lg:text-[1.2rem] w-[100%]'>{cityDetails?.paragraph1}</p>
+                </div>
+
+              <div className="row gy-4">
+                      <div className="col-lg-8">
+                            <div className="list-grid-item-wrapper property-item-wrapper row gy-2">
+                            {/* {filteredproptyDataArray?.map((item,index)=><Link to={`/propertyData/${item.houseApprovedId}`} key={index}>
+                              <PropertyCard  item={item} name={name} useraddress={useraddress} phoneNumber={phoneNumber} pinCode={pincode} setName={setName} setPincode={setPincode} setPhoneNumber={setPhoneNumber} setUseraddress={setUseraddress} buyNow={buyNow} />
+                            </Link>)} */}
+                            {filteredproptyDataArray?.map((item, index) =>
+                              
+                                <PropertyCard key={index} item={item} name={name} useraddress={useraddress} phoneNumber={phoneNumber} pinCode={pincode} setName={setName} setPincode={setPincode} setPhoneNumber={setPhoneNumber} setUseraddress={setUseraddress} buyNow={buyNow} />
+                             )}
+                            </div>
+                      </div>
+              </div>
+
+              <div className=' w-[100%] my-4 lg:w-[67%]'>
+                  <p className='text-[1.1rem] lg:text-[1.2rem] w-[100%]'>{cityDetails?.paragraph2}</p>
+                </div>
+
+                <PropertyFaq cityDetails={cityDetails} accordionClass="" itemClass="" />
+
             </div>
-
-            {filteredproptyDataArray?.map((item,index)=><PropertyCard key={index} item={item} name={name} useraddress={useraddress} phoneNumber={phoneNumber} pinCode={pincode} setName={setName} setPincode={setPincode} setPhoneNumber={setPhoneNumber} setUseraddress={setUseraddress} buyNow={buyNow} />)}
-
-        </div>
+       </section>
 
         
         
-        {/* <Body setCurrentPrice={setCurrentPrice}/>  */}
    </>
   )
 }

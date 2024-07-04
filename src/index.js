@@ -8,14 +8,12 @@ import Error from './components/Error';
 import About from './components/About';
 import Contact from './components/Contact';
 import Body from './components/Body';
-import Login from './components/Login';
 import UserDetails from './components/UserDetails';
 import AddEditUser from './components/AddEditUser';
 import 'semantic-ui-css/semantic.min.css'
-import Listing from './components/Listing';
+import Listing from './components/ListingProperties/Listing';
 import CityProperties from './components/CityProperties';
 import Dashboard from './Pages/admin/dashboard/Dashboard';
-import AddProductPage from './Pages/admin/AddProductPage';
 import UpdateProductPage from './Pages/admin/UpdateProductPage';
 import { Provider } from 'react-redux';
 import appStore from './utils/appStore';
@@ -25,6 +23,15 @@ import MyState from './context/myState';
 import UserPropertyDetails from './components/admin/UserPropertyDetails';
 import UpdateSellProperties from './Pages/admin/dashboard/UpdateSellProperties';
 import UserHouseImages from './components/admin/UserHouseImages';
+import UserSellHousesImages from './components/admin/UserSellHousesImages';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Login from './components/Login';
+import AccountSection from './components/AccountSection';
+import Account from './components/Account';
+import PropertyDetails from './components/PropertyDetails';
+import PropertyPrice from './components/PropertyPrice';
+
+
 // import { PersistGate } from 'redux-persist/integration/react';
 // import persistStore from 'redux-persist/es/persistStore';
 
@@ -50,7 +57,7 @@ const appRouter= createBrowserRouter([
       },
       {
         path:"/edit-profile",
-        element:<ProtectedRouteForUser> <UserDetails/></ProtectedRouteForUser>
+        element:<ProtectedRouteForUser> <Account/></ProtectedRouteForUser>
       },
       {
         path:"/add",
@@ -69,9 +76,14 @@ const appRouter= createBrowserRouter([
         element:<CityProperties/>
       },
       {
-        path:"/addproduct",
-        element:<ProtectedRouteForAdmin><AddProductPage/></ProtectedRouteForAdmin>
+        path:"/propertyData/:id",
+        element:<PropertyDetails/>
+      },
+      {
+        path:"/property-pricing",
+        element:<PropertyPrice/>
       }
+      
     ],
     errorElement:<Error/>
   },
@@ -101,6 +113,9 @@ const appRouter= createBrowserRouter([
   ,{
     path:"/rentImagesPage",
     element:<UserHouseImages/>
+  },{
+    path:"/sellImagesPage",
+    element:<UserSellHousesImages/>
   }
 ])
 

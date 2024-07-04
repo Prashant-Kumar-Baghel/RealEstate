@@ -8,12 +8,12 @@ import { LOGO_URL } from '../utils/constants';
 import { faFacebook,faLinkedin } from '@fortawesome/free-brands-svg-icons';
 import { faTwitter,faInstagram } from '@fortawesome/free-brands-svg-icons';
 import { faYoutube } from '@fortawesome/free-brands-svg-icons';
-
+import { faAngleDoubleRight } from '@fortawesome/free-solid-svg-icons';
 const Footer = () => {
   return (
     
     <div className='bg-[#191919]'>
-      <div className='max-w-[1180px] mx-auto px-[20px] overflow-hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4  gap-4 py-[8vh]'>
+      <div className=' container container-two grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4  gap-4 py-[8vh]'>
       {/* Location  */}
       <div >
           <h4 className='mb-[2vh] text-white text-[1.5rem] font-[600]'>Location and Direction</h4>
@@ -50,18 +50,18 @@ const Footer = () => {
 
       {/* Company */}
       <div className='flex flex-col gap-[10px]'>
-        <h4 className='mb-[2vh] text-white text-[1.5rem] font-[600]'>Company</h4>
+        <h4 className='mb-[2vh] text-white text-[1.5rem] font-[600]'>  Company</h4>
         <div>
-          <Link className="text-white text-[1.2rem]" to="/about">About Us</Link>
+          <Link className="text-white text-[1.2rem]  no-underline flex gap-3 items-center" to="/about"> <FontAwesomeIcon icon={faAngleDoubleRight} style={{ color: 'orange',fontSize:'1rem' }} /> <span className='hover:text-orange-500'> About Us</span></Link>
         </div>
         <div>
-          <Link className="text-white text-[1.2rem]" to="/contact">Contact Us</Link>
+          <Link className="text-white text-[1.2rem] hover:text-orange-500 no-underline flex gap-3 items-center" to="/contact"> <FontAwesomeIcon icon={faAngleDoubleRight} style={{ color: 'orange',fontSize:'1rem' }} /> <span className='hover:text-orange-500'>Contact Us</span></Link>
         </div>
         <div>
-          <Link className="text-white text-[1.2rem]" to="/">Terms & Conditions</Link>
+          <Link className="text-white text-[1.2rem] hover:text-orange-500 no-underline flex gap-3 items-center" to="/"> <FontAwesomeIcon icon={faAngleDoubleRight} style={{ color: 'orange',fontSize:'1rem' }} /> <span className='hover:text-orange-500'>Terms & Conditions</span></Link>
         </div>
         <div>
-          <Link className="text-white text-[1.2rem]" to="/">Privacy Policy</Link>
+          <Link className="text-white text-[1.2rem] hover:text-orange-500 no-underline flex gap-3 items-center" to="/"> <FontAwesomeIcon icon={faAngleDoubleRight} style={{ color: 'orange',fontSize:'1rem' }} /> <span className='hover:text-orange-500'> Privacy Policy</span></Link>
         </div>
       </div>
 
@@ -69,19 +69,19 @@ const Footer = () => {
       <div className='flex flex-col gap-[10px]'>
         <h4 className='mb-[2vh] text-white text-[1.5rem] font-[600]'>Links</h4>
         <div>
-          <Link className="text-white text-[1.2rem]" to="/">Flat for Reant in Mohali</Link>
+          <Link className="text-white text-[1.2rem] hover:text-orange-500 no-underline flex gap-3 items-center" to="/"> <FontAwesomeIcon icon={faAngleDoubleRight} style={{ color: 'orange',fontSize:'1rem' }} /> <span className='hover:text-orange-500'>Flat for Reant in Mohali</span></Link>
         </div>
         <div>
-            <Link className="text-white text-[1.2rem]" to="/">Flat for Reant in Zirakpur</Link>
+            <Link className="text-white text-[1.2rem] hover:text-orange-500 no-underline flex gap-3 items-center" to="/"><FontAwesomeIcon icon={faAngleDoubleRight} style={{ color: 'orange',fontSize:'1rem' }} /> <span className='hover:text-orange-500'>Flat for Reant in Zirakpur</span></Link>
         </div>
         <div>
-           <Link className="text-white text-[1.2rem]" to="/">Flat for Reant in New Chandigarh</Link>
+           <Link className="text-white text-[1.2rem] hover:text-orange-500 no-underline flex gap-3 items-center" to="/"><FontAwesomeIcon icon={faAngleDoubleRight} style={{ color: 'orange',fontSize:'1rem' }} /> <span className='hover:text-orange-500'>Flat for Reant in Chandigarh</span></Link>
         </div>
         <div>
-            <Link className="text-white text-[1.2rem]" to="/">Flat for Reant in Manimajra</Link>
+            <Link className="text-white text-[1.2rem] hover:text-orange-500 no-underline flex gap-3 items-center" to="/"><FontAwesomeIcon icon={faAngleDoubleRight} style={{ color: 'orange',fontSize:'1rem' }} /> <span className='hover:text-orange-500'>Flat for Reant in Manimajra</span></Link>
         </div>
         <div>
-             <Link className="text-white text-[1.2rem]" to="/">Flat for Reant in Sector 15</Link>
+             <Link className="text-white text-[1.2rem] hover:text-orange-500 no-underline flex gap-3 items-center" to="/"><FontAwesomeIcon icon={faAngleDoubleRight} style={{ color: 'orange',fontSize:'1rem' }} /> <span className='hover:text-orange-500'>Flat for Rent in Sector 15</span></Link>
         </div>
       </div>
 

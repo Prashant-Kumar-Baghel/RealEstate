@@ -1,26 +1,15 @@
 import {  configureStore } from "@reduxjs/toolkit";
 import userReducer from "./userSlice"
 import propertyReducer from "./propertySlice"
-// import storage from "redux-persist/lib/storage";
-// import persistReducer from "redux-persist/es/persistReducer";
-// const persistConfig={
-//     key:"root",
-//     version:1,
-//     storage
-// }
-// const reducer=combineReducers({
-//     user:userReducer,
-//     // property:propertyReducer
-// })
-// const persistedReducer=persistReducer(persistConfig,reducer);
+import bhkReducer from './featuresSlice'
 const appStore= configureStore({
     // app reducer have different reducer for different slices. 
     reducer:{
         user:userReducer,
-        property:propertyReducer
+        property:propertyReducer,
+        features: bhkReducer
     }
-    // reducer: persistedReducer
-    //     
+         
         
 })
 export default appStore;

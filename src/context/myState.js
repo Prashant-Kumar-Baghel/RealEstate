@@ -1,9 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from 'react';
 import MyContext from './myContext';
-import { db, realdb } from '../utils/firebase';
-import { ref } from 'firebase/storage';
-import { child, get } from 'firebase/database';
+import { db} from '../utils/firebase';
 import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
 
@@ -12,15 +10,18 @@ function MyState({children}) {
   const [getAllSellProduct, setGetAllSellProduct] = useState([]);
   const [getAllUser, setGetAllUser] = useState([]);
   const [cityList,setCityList]=useState([]);
-  // const [countUsers,setCountUsers]=useState(0);//we create countUsers,setCountUsers to show only those users on admin page which added property and remove those users which has not any property.
   const [userData,setUserData]=useState(null)
-  const [userHousesImages,setUserHousesImages]=useState(null);
-  const [selectedRentImages,setSelectedRentImages]=useState([])//created this array to store images link from firebase .
-// console.log( "userDataseeee", userData)
+  const [rentImages,setRentImages]=useState([])//used to store the image of particular rent house
+  const [rentItem,setRentItem]=useState(null);//used to store the docid of particular rent house.
+  const [sellImages,setSellImages]=useState([])//used to store the image of particular selling house
+  const [sellItem,setSellItem]=useState(null);//used to store the docid of particular selling house.
+  const [blogData, setBlogData] = useState(null);
   const user=useSelector((store)=>store.user)
-//  console.log( "userDataseeee", user)
-const getAllProductFunction=async ()=>{
+
+  
+const getAllProductFunction=async ()=>{//This method provide all rent property
   try{
+    //orderBy('time'): Orders the documents in the "Rent" collection by the time field in ascending order by default. This means that the documents will be sorted from the earliest to the latest time.
     const q = query(
       collection(db, "Rent"),
       orderBy('time')  
@@ -29,13 +30,10 @@ const getAllProductFunction=async ()=>{
       let productArray = [];
       QuerySnapshot.forEach((doc) => {
           productArray.push({ ...doc.data(), id: doc.id });
-          // console.log("productArrayInside",productArray)
       });
-      console.log("productArray",productArray)
       setGetAllProduct(productArray);
-      // setLoading(false);
   });
-  return () => data;
+  return () => data();
   }catch(err){
     console.log(err);
   }
@@ -46,7 +44,7 @@ const getAllProductFunction=async ()=>{
 
   // ------------------------------------- 
 
-  const getAllSellProductFunction=async ()=>{
+  const getAllSellProductFunction=async ()=>{//This method provide all rent property
     try{
       const q = query(
         collection(db, "Sell"),
@@ -56,13 +54,10 @@ const getAllProductFunction=async ()=>{
         let productArray = [];
         QuerySnapshot.forEach((doc) => {
             productArray.push({ ...doc.data(), id: doc.id });
-            // console.log("productArrayInside",productArray)
         });
-        console.log("productArray",productArray)
         setGetAllSellProduct(productArray);
-        // setLoading(false);
     });
-    return () => data;
+    return () => data();
     }catch(err){
       console.log(err);
     }
@@ -83,14 +78,12 @@ const getAllUserFunction=()=>{
    const userdata= onSnapshot(q,(snapShot)=>{
       let userArray=[];
       snapShot.docs.forEach((doc)=>{
-        // userArray.push({...doc.data()})
         const docData = doc.data();
         // Filter out documents where countProperties is greater than 0
         if (docData.countProperties > 0) {
           userArray.push({ ...docData })
         }
       })
-      console.log("userArray",userArray)
       setGetAllUser(userArray);
     })
     return ()=>userdata;
@@ -109,7 +102,6 @@ const getAllUserFunction=()=>{
   const fetchData= async()=>{
     const response= await fetch("https://realestate-adea6-default-rtdb.firebaseio.com/citiesList.json")
     const data= await response.json();
-    // console.log("ProductData",data);
     setCityList(data);
 }
 useEffect(  ()=>{
@@ -126,18 +118,13 @@ const getUserDetails=()=>{
         collection(db,"EditedUsers"),
       where("uid","==",user?.uid))
     }
-    // const q = query(
-    //   collection(db, "RegisteredUsers"), 
-    //   where('uid', '==', user?.uid)
-    //   );
+   
     let data;
  if(q){
    data=onSnapshot(q,(QuerysnapShot)=>{
     // let userInfo;
     //we pass docId because we want to update that user inside userDetail section.
       QuerysnapShot.forEach((doc)=>setUserData({...doc.data(),docId:doc.id}) );
-      // console.log( "userDataseeee", userData)
-      // setUserData({...userInfo,docId:doc.id})
   })
  }
   return ()=>data;
@@ -149,8 +136,14 @@ const getUserDetails=()=>{
 useEffect(()=>{ 
   getUserDetails();
 },[user])
+
+  // Get Current Month
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
+  const currentMonth = new Date().getMonth();
+  const currentMonthName = monthNames[currentMonth];
+  
   return (
-    <MyContext.Provider value={{getAllProduct,getAllUser,cityList,userData,setUserData,getAllSellProduct,setGetAllUser,userHousesImages,setUserHousesImages,selectedRentImages,setSelectedRentImages}}>
+    <MyContext.Provider value={{getAllProduct,getAllUser,cityList,userData,setUserData,getAllSellProduct,setGetAllUser,rentImages,setRentImages,rentItem,setRentItem,sellImages,setSellImages,sellItem,setSellItem,blogData, setBlogData, currentMonthName}}>
        {children}
     </MyContext.Provider>
   )

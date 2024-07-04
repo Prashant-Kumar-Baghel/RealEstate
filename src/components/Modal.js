@@ -12,7 +12,6 @@ export default function Modal({ name, address, pincode, phoneNumber, setName, se
         setIsOpen(true)
     }
 
-    // console.log(name,address,pincode,phoneNumber)
     return (
         <>
             <div className="  text-center rounded-lg text-white font-bold">

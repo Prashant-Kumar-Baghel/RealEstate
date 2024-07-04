@@ -1,17 +1,17 @@
 import { Timestamp,  doc, getDoc, updateDoc } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Loader } from 'semantic-ui-react';
 import { db } from '../../../utils/firebase';
-import DeleteIcon from '@mui/icons-material/Delete';
+import myContext from '../../../context/myContext';
 
 const initialState={
   address: "",
-  price: null,
+  price: "",
   city: "",
   furnishing: "",
   area:"",
-  bhk : null,
+  bhk : "",
   parking :"",
   availability:"",
   brokerContact:""
@@ -19,12 +19,11 @@ const initialState={
 const UpdateSellProperties = () => {
   const [data,setData]=useState(initialState);
   const {id}=useParams();
-  const [selectedImages,setSelectedImages]=useState([]);//this array contain all multiple images links that we select.
   // const [progress,setProgress]=useState(null);//Check our file is upload or not on firebase.
   const [isSubmit,setIsSubmit]=useState(false)//check form is submit or not.
   const navigate = useNavigate();
-  const [cityList,setCityList]=useState(null);
-  const {city,furnishing,parking,area,bhk,price, availability,address,brokerContact}=data;
+  const {cityList}=useContext(myContext);
+  const {city,furnishing,parking,area,bhk,price, availability,address,brokerContact,houseSellApprovedId,sellImgArray}=data;
   const handleButtonClick= async ()=>{
     await updateDoc(doc(db,"Sell",id),{
       ...data,
@@ -37,30 +36,40 @@ const UpdateSellProperties = () => {
                     year: "numeric",
                 }
             )
+            
     })
+    // ----update realtime database 
+    const rentCity=cityList.find((cityItem)=>cityItem?.city===city);
+    if(houseSellApprovedId){
+      const ref=fetch(`https://realestate-adea6-default-rtdb.firebaseio.com/cityId%3D${rentCity?.id}/sell/${houseSellApprovedId}.json`,
+    {
+      method:"PATCH",
+      headers:{
+        "Content-type":"application/json"
+      },
+      body:JSON.stringify({
+        address:address,
+        area:area,
+        availability:availability,
+        bhk:bhk,
+        city:city,
+        furnishing:furnishing,
+        parking:parking,
+        price:price,
+        sellImgArray:sellImgArray,
+        id
+      })
+    })
+    }
     alert("Data Updated successfully")
     navigate("/admin-dashboard")
-    // alert("Data Updated successfully")
   }
   const handleChange=(e)=>{
-    if(e.target.name==="price" || e.target.name==="bhk"){
-      // console.log(e.target.name,typeof(+e.target.value))
-      setData({...data,[e.target.name]:+e.target.value})
-      return;
-    }
+    
     setData({...data,[e.target.name]:e.target.value})
   }
 
-  // const dispatch=useDispatch();
-  useEffect(()=>{
-    fetchData()
-},[])
-const fetchData=async()=>{
-    const response=await fetch("https://realestate-adea6-default-rtdb.firebaseio.com/citiesList.json");
-    const data=await response.json();
-    console.log("OP",data);
-    setCityList(data);
-}
+ 
 
 
   useEffect(()=>{
@@ -75,9 +84,6 @@ const fetchData=async()=>{
   }
   return (
     <div className="max-w-[1180px] mx-auto px-[20px] overflow-hidden">
-        {/* <Grid columns={3} centered verticalalign="middle" > 
-            <GridRow >
-              <GridColumn> */}
                 <div className='mt-[2vh]'>
                   {(isSubmit)?(<Loader/>):(
                     <>
@@ -152,52 +158,7 @@ const fetchData=async()=>{
                       </div>
 
 
-                      <div className=' flex-wrap'>
-                        <div>
-                            <label htmlFor='file'  className='flex flex-col px-[.5rem] justify-center items-center border-[1px] border-dotted border-black rounded-md w-[10rem] h-[10rem] cursor-pointer text-[1.2rem] bg-[#f0f9ff] text-[#0078db] font-[600]'>
-                              + Add Images <br />
-                              <span className='text-[1rem] pt-[0.5rem] text-[#0078db] font-[500] text-center'>Drag and drop your photos here</span>
-                              </label>
-                              {/* To Upload files we use input with type file.  */}
-                              <input 
-                              type="file" 
-                              id='file'
-                              className='p-2 outline-none border-black border-[2px] border-solid hidden' 
-                              multiple//give multiple attribute to select multiple images.
-                              onChange={(e)=>{
-                                // console.log("Files",e.target.files);
-                              //   Array.isArray() is a method used in JavaScript to determine whether a value is an array. It returns true if the value is an array, otherwise false.
-                              // console.log(Array.isArray(e.target.files))//we get false hence e.target.files is not an array
-
-                              //convert into array .
-                              const selectedFile=e.target.files;
-                              const selectedArray=Array.from(selectedFile);
-                              // console.log(Array.isArray(selectedArray));
-                              const imagesArray=selectedArray.map((item)=>{
-                                return  URL.createObjectURL(item)//The URL.createObjectURL() static method creates a string containing a URL representing the object given in the parameter.
-                              })
-                              console.log("imagesArray",imagesArray)
-                              // 1)Arrow function present inside setSelectedImages takes the previous state of the selectedImages array.
-                              // 2)Concatenates the imagesArray (which contains URLs of newly selected images) with the previous state.
-                              // 3)Updates the state of selectedImages to include the newly added images.
-                              setSelectedImages((previousImages)=>previousImages.concat(imagesArray));//The concat() method in JavaScript is used to merge two or more arrays or array-like objects, such as strings, into a new array without modifying the original arrays.
-                              // let tempArray=
-                              }} />
-                        </div>
-                          
-                        <div className='flex gap-4 mt-4 flex-wrap'>
-                          {selectedImages?.map((imgLink,index)=> <div 
-                          key={index} className='relative shadow-md'>
-                              <img src={imgLink} className="h-[150px]" alt=''/> 
-                          <button onClick={(e)=>{
-                              setSelectedImages(selectedImages.filter((item)=>{
-                                  return item!==imgLink
-                              }))
-                          }} className='absolute top-2 right-2'><DeleteIcon sx={{color:"white",background:"black"}}/></button>
-                          </div>) }
-                       </div>
-
-                      </div>
+                    
 
                       
                       {/* button is disable if image upload process is in progress. */}
@@ -206,11 +167,6 @@ const fetchData=async()=>{
                     </>
                   )}
                 </div>
-              {/* </GridColumn>
-            </GridRow>
-
-        
-        </Grid> */}
     </div>
   )
 }

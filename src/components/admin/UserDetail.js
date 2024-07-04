@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 const UserDetail = () => {
     const {getAllUser}=useContext(myContext);
-    console.log("getAllUser",getAllUser);
     const navigate=useNavigate();
     return (
         <div>
@@ -34,7 +33,7 @@ const UserDetail = () => {
                            <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">
                                {displayName}
                            </td>
-                           <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 text-green-500 cursor-pointer ">
+                           <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500  cursor-pointer ">
                                {email}
                            </td>
                            <td className="px-4 text-center" ><button className="bg-red-500 p-4 text-white rounded-lg" 

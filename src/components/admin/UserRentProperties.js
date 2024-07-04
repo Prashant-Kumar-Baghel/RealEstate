@@ -1,16 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react'
 import myContext from '../../context/myContext'
 import { useNavigate, useParams } from 'react-router-dom';
-import { collection, deleteDoc, doc, getDoc, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc,  onSnapshot, query, updateDoc, where } from 'firebase/firestore';
 import { db } from '../../utils/firebase';
 
 const UserRentProperties = () => {
-    const {cityList,getAllProduct,userData}=useContext(myContext);
-    console.log("getAllProduct",getAllProduct);
+    const {cityList,setRentItem,setRentImages}=useContext(myContext);
     const {userId}=useParams();
-    console.log("idok",userId)
     const [getAllRentProperties,setGetAllRentProperties]=useState([])
-    console.log("getAllRentProperties",getAllRentProperties);  
 
      const navigate=useNavigate();
 
@@ -36,20 +33,9 @@ const UserRentProperties = () => {
         getAllRentPropertiesfunction();
     },[])
 
-    // ----------------------------------- 
-
-
-        // --------------------------------------------- 
-
-
-    // const addedDocId=()=>{
-
-    // }
-    // useEffect(()=>{
-    //     addedDocId();
-    // },[])
-    const handleDelete= async (id,authId)=>{
-        
+    
+    const handleRentDelete= async (item)=>{
+        const {id,authId,city,houseApprovedId}=item;
         //We do updateDoc here to show only those users which has added propery on admin page.
         // ------------------------------------ 
         let q;
@@ -57,50 +43,62 @@ const UserRentProperties = () => {
         collection(db,"EditedUsers"),
       where("uid","==",authId))
     
-    // const q = query(
-    //   collection(db, "RegisteredUsers"), 
-    //   where('uid', '==', user?.uid)
-    //   );
    let userInfo=null;
  
    const snapPromise= new Promise((resolve)=>{
     onSnapshot(q,  (QuerysnapShot)=>{
         QuerysnapShot.forEach((doc) => {
             userInfo = { ...doc.data(), docId: doc.id };
-            // console.log(userInfo); // Log userInfo here
         });
         resolve();
       })
    })
    await snapPromise;
-   console.log("snap",userInfo);
    await updateDoc(doc(db,"EditedUsers",userInfo?.docId),{
     ...userInfo,postProperty:true,countProperties:userInfo?.countProperties-1
   })
-        
+       const rentCity=cityList.find((cityItem)=>cityItem.city===city);
 
         if(window.confirm("Are you want to delete that user?")){
             try{
-              await deleteDoc(doc(db,"Rent",id));
+              await deleteDoc(doc(db,"Rent",id));//delete from the firestoredatabase
+             if(houseApprovedId){
+                const res =await fetch(`https://realestate-adea6-default-rtdb.firebaseio.com/cityId%3D${rentCity?.id}/${houseApprovedId}.json`,
+                {
+                  method: "DELETE",
+                  headers: {
+                      "Content-type": "application/json"
+                  }
+                })
+             }
+
             }catch(err){
-                console.log(err);
+                console.log("Deleteerror",err);
             }
         }
     }
-    const handleApproved=async (item)=>{
+    const handleRentApproved=async (item)=>{
         const {address,area,availability,bhk,city,furnishing,parking,price,rentImgArray,id}=item;
+        //The find() method returns the value of the first element that passes a test.
+        //The find() method executes a function for each array element.
         const selectedCityItem=cityList.find((cityItem)=>cityItem?.city===item?.city)
-        // console.log("selectedCity",selectedCityItem)
-        // console.log("selectedCityItem",item)
+
         const selectedcityId=selectedCityItem?.id;
-        console.log("selectedcityId",selectedcityId)
         // setCityId(selectedcityId);
-        const res= fetch(`https://realestate-adea6-default-rtdb.firebaseio.com/cityId%3D${selectedcityId}.json`,
+        //way to post the data in realtime database.
+        //1)The first argument to fetch is the URL to which the request is sent. In this case, it's a Firebase Realtime Database URL with a dynamic parameter selectedcityId.
+        // 2)The second argument to fetch is an object containing configurations for the request. It includes:
+        // method: "POST": Specifies that the HTTP request method is POST. This typically means the client is sending data to the server.
+        // headers: An object specifying headers for the request. In this case, it includes a header indicating that the content type of the request body is JSON.
+        // body: The body of the request. It's constructed using JSON.stringify() to convert a JavaScript object into a JSON string. The object includes various properties such as address, area, availability, etc. These properties seem to represent details about a real estate property, such as its address, size, availability, etc.
+
+        const response= await fetch(`https://realestate-adea6-default-rtdb.firebaseio.com/cityId%3D${selectedcityId}.json`,
                     {
                         method:"POST",
                         headers:{
                             "Content-type":"application/json"
                         },
+                        //Alway send that to server in string form.
                         body:JSON.stringify({
                             address,
                             area,
@@ -116,13 +114,15 @@ const UserRentProperties = () => {
                         })
                     }
         )
+        const data= await response.json();
 
-        if(res){
-            // setButtonState("Approved");
+        if(response){
+            alert("Are you sure to want approve this property?");
             await updateDoc(doc(db,"Rent",id),{
-                ...item,approveState:"approved"
+                ...item,approveState:"Property Approved",houseApprovedId:data?.name// houseApprovedId:data?.name is  firebase automatically generates a unique key (ID) for that data. After making the POST request, Firebase returns a response containing the key (ID) of the newly created data. You can access this ID from the response of the fetch request.
             })
-            alert("data,approved");
+
+            
         }
     }
   return (
@@ -146,18 +146,21 @@ const UserRentProperties = () => {
                             <th scope="col" className="h-12 px-6 text-md font-bold fontPara border-l first:border-l-0 border-pink-100 text-slate-700 bg-slate-100">Action</th>
                         </tr>
                         {getAllRentProperties && getAllRentProperties?.map((item,index)=>{
-                            console.log("helloProduct")
-                            console.log("Item",item);
-                            const {address,area,availability,bhk,brokerContact,city,furnishing,parking,price,rentImgArray,id,approveState,authId}=item;
+                            const {address,area,availability,bhk,brokerContact,city,furnishing,parking,price,rentImgArray,id,approveState}=item;
                              
-                            //   console.log("selectedCityId",selectedCityId);
                             return(
                                 <tr className="text-pink-300" key={index}>
                                     <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">
                                         {index+1}.
                                     </td>
-                                    <td className="h-10 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">
-                                        <img src={rentImgArray[0]} className="h-[8rem]" alt="" />
+                                    
+                                    <td className="h-10 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase w-[100%]">
+                                        
+                                        <img src={rentImgArray[0]} alt="" className="w-[100%] h-[10rem] cursor-pointer" onClick={()=>{
+                                            setRentItem(item);
+                                            setRentImages(rentImgArray)
+                                            navigate("/rentImagesPage")
+                                        }} />
                                     </td>
                                     <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">
                                         {address}
@@ -186,10 +189,11 @@ const UserRentProperties = () => {
                                     <td className="h-12 px-6 text-md transition duration-300 border-t border-l first:border-l-0 border-pink-100 stroke-slate-500 text-slate-500 first-letter:uppercase ">
                                         {brokerContact}
                                     </td>
-                                    <td className="px-4 text-center"><button className="bg-green-500 p-4 text-white rounded-lg"
-                                    onClick={()=>handleApproved(item)} 
+                                    <td className="px-4 text-center">
+                                    <button className="bg-green-500 p-4 text-white rounded-lg"
+                                    onClick={()=>handleRentApproved(item)} 
                                     >{approveState}</button></td>
-                                    <td className="px-4 text-center" onClick={()=>handleDelete(id,authId)}><button className="bg-red-500 p-4 text-white rounded-lg">Reject</button></td>
+                                    <td className="px-4 text-center" onClick={()=>handleRentDelete(item)}><button className="bg-red-500 p-4 text-white rounded-lg">Reject</button></td>
                                     <td className="px-4 text-center"><button className="bg-orange-400 p-4 text-white rounded-lg" onClick={()=>{
                                         navigate(`/updateproduct/${id}`)
                                     }}>Edit</button></td>

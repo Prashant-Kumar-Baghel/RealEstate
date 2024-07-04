@@ -3,7 +3,6 @@ import { useRouteError } from 'react-router-dom'
 import { ERROR_URL } from '../utils/constants';
 const Error = () => {
     const err=useRouteError();
-    // console.log(err);
   return (
     <div className='error flex flex-col justify-center items-center my-[5vh]'>
         <h1 className="text-[6rem] text-gray-300 font-bold">{err.status}</h1>

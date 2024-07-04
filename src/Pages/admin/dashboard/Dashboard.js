@@ -3,15 +3,28 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import ProductDetail from '../../../components/admin/ProductDetails';
 import OrderDetails from '../../../components/admin/OrderDetails';
 import UserDetail from '../../../components/admin/UserDetail';
-import { useSelector } from 'react-redux';
-import Header from '../../../components/Header';
+import {  useDispatch } from 'react-redux';
 import myContext from '../../../context/myContext';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../../utils/firebase';
+import { removeUser } from '../../../utils/userSlice';
+import { useNavigate } from 'react-router-dom';
+
 const Dashboard = () => {
-    // const propertyArray=useSelector((store)=>store.property.items)
-    // console.log("dasboard",propertyArray);
-    const user=useSelector((store)=>store.user);
-    const {getAllProduct}=useContext(myContext);
-    const {getAllUser}=useContext(myContext);
+    const dispatch=useDispatch();
+    const navigate=useNavigate();
+    const {getAllProduct,userData,getAllUser,getAllSellProduct}=useContext(myContext);
+    const handleButtonClick=()=>{
+        signOut(auth).then(() => {
+        
+        dispatch(removeUser());
+           navigate("/signIn");
+       
+
+        }).catch((error) => {
+        navigate("/error");
+        });
+    }
   return (
     <div>
               <div>
@@ -35,27 +48,25 @@ const Dashboard = () => {
                            <div className="">
                             {/* Name  */}
                             <h1 className=" text-center text-lg">
-                                <span className=" font-bold">Name :{user.displayName} </span>
+                                <span className=" font-bold">Name :{userData?.displayName} </span>
                         
                             </h1>
 
                             {/* Email  */}
                             <h1 className=" text-center text-lg">
-                                <span className=" font-bold">Email : {user.email} </span>
+                                <span className=" font-bold">Email : {userData?.email} </span>
                             
                             </h1>
 
-                            {/* Date  */}
-                            {/* <h1 className=" text-center text-lg">
-                                <span className=" font-bold">Date : </span>
-                        
-                            </h1> */}
 
                             {/* Role  */}
                             <h1 className=" text-center text-lg">
-                                <span className=" font-bold">Role : {user.role} </span>
+                                <span className=" font-bold">Role : admin </span>
                         
                             </h1>
+                            <div className=" text-center text-lg">
+                            <button onClick={handleButtonClick}  className="text-white bg-green-700 py-2 px-4 text-lg rounded-md">Sign Out</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -90,7 +101,7 @@ const Dashboard = () => {
                                         </svg>
 
                                     </div>
-                                    <h2 className="title-font font-medium text-3xl text-pink-400 fonts1" >{getAllProduct.length}</h2>
+                                    <h2 className="title-font font-medium text-3xl text-pink-400 fonts1" >{getAllProduct.length+getAllSellProduct.length}</h2>
                                     <p className=" text-pink-500  font-bold" >Total Properties</p>
                                 </div>
                             </Tab>
